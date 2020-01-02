@@ -28,8 +28,8 @@ var (
 )
 
 type SessionEventHandler interface {
-	OnSessionClose(s *Session)
-	OnSessionMessage(s *Session, message []byte)
+	OnClose(s *Session)
+	OnReceived(s *Session, message []byte)
 }
 
 // Session is a middleman between the websocket connection and the hub.
@@ -61,7 +61,7 @@ func NewSession(conn *websocket.Conn, eventHandler SessionEventHandler) *Session
 func (s *Session) HandleRead() {
 	defer func() {
 		if s.handler != nil {
-			s.handler.OnSessionClose(s)
+			s.handler.OnClose(s)
 		}
 		s.conn.Close()
 	}()
@@ -81,7 +81,7 @@ func (s *Session) HandleRead() {
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 
 		if s.handler != nil {
-			s.handler.OnSessionMessage(s, message)
+			s.handler.OnReceived(s, message)
 		}
 	}
 }
@@ -95,7 +95,7 @@ func (s *Session) HandleWrite() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		if s.handler != nil {
-			s.handler.OnSessionClose(s)
+			s.handler.OnClose(s)
 		}
 		ticker.Stop()
 		s.conn.Close()
