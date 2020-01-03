@@ -7,7 +7,7 @@ package main
 import (
 	"flag"
 
-	"github.com/tinhatwork/go-chat/service"
+	"github.com/tinhatwork/go-chat/chat"
 	"github.com/tinhatwork/go-chat/transport"
 )
 
@@ -16,7 +16,7 @@ var addr = flag.String("addr", ":8080", "http service address")
 func main() {
 	flag.Parse()
 
-	service := service.NewService()
+	service := chat.NewService()
 	server := transport.NewServer(service)
 
 	server.ListenAndServe(*addr)

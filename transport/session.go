@@ -42,6 +42,8 @@ type Session struct {
 
 	// The handler for session network event.
 	handler SessionEventHandler
+
+	signal chan int
 }
 
 // NewSession creates a new session
@@ -50,6 +52,7 @@ func NewSession(conn *websocket.Conn, eventHandler SessionEventHandler) *Session
 		conn:    conn,
 		send:    make(chan []byte, 256),
 		handler: eventHandler,
+		signal:  make(chan int),
 	}
 }
 
@@ -94,9 +97,6 @@ func (s *Session) HandleRead() {
 func (s *Session) HandleWrite() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
-		if s.handler != nil {
-			s.handler.OnClose(s)
-		}
 		ticker.Stop()
 		s.conn.Close()
 	}()
@@ -131,6 +131,13 @@ func (s *Session) HandleWrite() {
 			if err := s.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
+		case <-s.signal:
+			return
 		}
 	}
+}
+
+// Close force closing current connection.
+func (s *Session) Close() {
+	close(s.signal)
 }
