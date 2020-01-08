@@ -115,7 +115,8 @@ func (s *Server) OnReceived(session *Session, message []byte) {
 func (s *Server) ListenAndServe(addr string) {
 	go s.run()
 
-	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/player", servePlayer)
+	http.HandleFunc("/supporter", serveSupporter)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		s.handleWs(w, r)
 	})
@@ -126,8 +127,8 @@ func (s *Server) ListenAndServe(addr string) {
 	}
 }
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
+func servePlayer(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/player" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
@@ -135,5 +136,17 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "home.html")
+	http.ServeFile(w, r, "player.html")
+}
+
+func serveSupporter(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/supporter" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "supporter.html")
 }

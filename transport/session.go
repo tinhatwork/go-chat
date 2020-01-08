@@ -43,7 +43,7 @@ type Session struct {
 	// The handler for session network event.
 	handler SessionEventHandler
 
-	signal chan int
+	quit chan int
 }
 
 // NewSession creates a new session
@@ -52,7 +52,7 @@ func NewSession(conn *websocket.Conn, eventHandler SessionEventHandler) *Session
 		conn:    conn,
 		send:    make(chan []byte, 256),
 		handler: eventHandler,
-		signal:  make(chan int),
+		quit:    make(chan int),
 	}
 }
 
@@ -131,7 +131,7 @@ func (s *Session) HandleWrite() {
 			if err := s.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
-		case <-s.signal:
+		case <-s.quit:
 			return
 		}
 	}
@@ -139,5 +139,14 @@ func (s *Session) HandleWrite() {
 
 // Close force closing current connection.
 func (s *Session) Close() {
-	close(s.signal)
+	close(s.quit)
+}
+
+// Send a message to client.
+func (s *Session) Send(data []byte) {
+	select {
+	case s.send <- data:
+	default:
+		close(s.quit)
+	}
 }

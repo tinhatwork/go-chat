@@ -2,6 +2,6 @@ package chat
 
 // User is a struct contains basic user information.
 type User struct {
-	Name string
+	ID   string
 	Role string
 }
