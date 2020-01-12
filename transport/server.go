@@ -41,6 +41,9 @@ type Server struct {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 // NewServer creates a new server.
@@ -83,7 +86,6 @@ func (s *Server) run() {
 
 // handleWs handles websocket requests from the peer.
 func (s *Server) handleWs(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
