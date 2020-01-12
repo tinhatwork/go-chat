@@ -83,6 +83,7 @@ func (s *Server) run() {
 
 // handleWs handles websocket requests from the peer.
 func (s *Server) handleWs(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -115,9 +116,9 @@ func (s *Server) OnReceived(session *Session, message []byte) {
 func (s *Server) ListenAndServe(addr string) {
 	go s.run()
 
-	http.HandleFunc("/player", servePlayer)
-	http.HandleFunc("/supporter", serveSupporter)
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/chat/player", servePlayer)
+	http.HandleFunc("/chat/supporter", serveSupporter)
+	http.HandleFunc("/chat/ws", func(w http.ResponseWriter, r *http.Request) {
 		s.handleWs(w, r)
 	})
 
@@ -128,7 +129,7 @@ func (s *Server) ListenAndServe(addr string) {
 }
 
 func servePlayer(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/player" {
+	if r.URL.Path != "/chat/player" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
@@ -140,7 +141,7 @@ func servePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveSupporter(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/supporter" {
+	if r.URL.Path != "/chat/supporter" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
